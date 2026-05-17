@@ -106,6 +106,6 @@ Desenvolver um sistema simples e funcional que permita:
 
 - Hugo Augusto Silva de Faria  
 - Yann Eduardo  
-- Lucas Freire  
-- Lucas  
+- Lucas Arthur Menezes Freire  
+- Lucas Oliveira Brandão 
 - Victor  
