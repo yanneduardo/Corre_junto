@@ -1,6 +1,6 @@
-# 📋 Requisitos do Sistema — CorreJunto
+# Requisitos do Sistema — CorreJunto
 
-## 📖 Histórias de Usuário
+## Histórias de Usuário
 
 ---
 
