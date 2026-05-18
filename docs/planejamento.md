@@ -111,8 +111,6 @@ Sistema de provas completo com moderação funcional.
   - Categoria (alimentação, treino, equipamento, recuperação)
   - Autor
 - Listagem de dicas com filtros
-- Implementação de feedback visual e loading states
-- Melhorias de responsividade (mobile-first)
 - Otimização de performance
 - Correção de bugs identificados
 - Testes de integração principais
