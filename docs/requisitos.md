@@ -205,7 +205,7 @@ Critérios de aceitação:
 # Diagrama de Casos de Uso
 
 ![Diagrama de Casos de Uso do CorreJunto](./casos-de-uso.png)
-# Requisitos do Sistema — CorreJunto
+
 
 # Requisitos Funcionais
 
