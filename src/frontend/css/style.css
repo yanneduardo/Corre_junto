@@ -1,0 +1,185 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --verde: #2ecc71;
+  --verde-escuro: #27ae60;
+  --cinza: #f4f4f4;
+  --borda: #ddd;
+  --texto: #333;
+  --vermelho: #e74c3c;
+}
+
+body {
+  font-family: system-ui, sans-serif;
+  background: var(--cinza);
+  color: var(--texto);
+  min-height: 100vh;
+}
+
+/* ── HEADER ── */
+header {
+  background: var(--verde);
+  color: #fff;
+  padding: 0 1.5rem;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+header h1 { font-size: 1.2rem; letter-spacing: 1px; }
+
+#btn-logout {
+  background: rgba(0,0,0,0.15);
+  border: none;
+  color: #fff;
+  padding: .4rem .9rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: .85rem;
+}
+#btn-logout:hover { background: rgba(0,0,0,0.3); }
+
+/* ── LAYOUT ── */
+main { max-width: 640px; margin: 2rem auto; padding: 0 1rem; }
+
+/* ── CARD ── */
+.card {
+  background: #fff;
+  border: 1px solid var(--borda);
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+}
+.card h2 { margin-bottom: 1rem; font-size: 1.1rem; }
+
+/* ── FORMULÁRIO ── */
+.field { display: flex; flex-direction: column; margin-bottom: .9rem; }
+.field label { font-size: .82rem; font-weight: 600; margin-bottom: .3rem; color: #555; }
+
+.field input,
+.field select,
+.field textarea {
+  border: 1px solid var(--borda);
+  border-radius: 4px;
+  padding: .55rem .75rem;
+  font-size: .95rem;
+  width: 100%;
+}
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+  outline: none;
+  border-color: var(--verde);
+}
+.field textarea { resize: vertical; min-height: 70px; }
+
+.row { display: flex; gap: .8rem; }
+.row .field { flex: 1; }
+
+/* ── BOTÕES ── */
+.btn {
+  display: inline-block;
+  padding: .6rem 1.2rem;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  font-size: .95rem;
+  font-weight: 600;
+}
+.btn-primary { background: var(--verde); color: #fff; width: 100%; }
+.btn-primary:hover { background: var(--verde-escuro); }
+.btn-secondary { background: #eee; font-size: .82rem; padding: .35rem .75rem; }
+.btn-danger { background: var(--vermelho); color: #fff; font-size: .82rem; padding: .35rem .75rem; }
+.btn-danger:hover { opacity: .85; }
+.btn-voltar {
+  background: none;
+  border: none;
+  color: var(--verde-escuro);
+  cursor: pointer;
+  font-size: .9rem;
+  margin-bottom: 1rem;
+  display: inline-block;
+}
+.btn-voltar:hover { text-decoration: underline; }
+
+/* ── MENSAGENS ── */
+.msg {
+  padding: .6rem .9rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  font-size: .9rem;
+}
+.msg-erro { background: #fdecea; color: var(--vermelho); border: 1px solid #f5c6cb; }
+.msg-ok   { background: #eafaf1; color: var(--verde-escuro); border: 1px solid #a9dfbf; }
+
+.hidden { display: none !important; }
+
+/* ── LISTA DE TREINOS ── */
+.lista-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+.lista-header span { font-size: .95rem; color: #555; }
+.lista-header .btn-primary { width: auto; }
+
+.treino-item {
+  border: 1px solid var(--borda);
+  border-radius: 8px;
+  padding: 1rem 1.2rem;
+  margin-bottom: .8rem;
+  background: #fff;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+.treino-item .info { flex: 1; }
+.treino-item .titulo { font-weight: 700; font-size: 1rem; margin-bottom: .25rem; }
+.treino-item .meta { font-size: .82rem; color: #666; line-height: 1.7; }
+.treino-item .acoes { display: flex; flex-direction: column; gap: .5rem; align-items: flex-end; }
+
+.badge {
+  display: inline-block;
+  padding: .15rem .5rem;
+  border-radius: 12px;
+  font-size: .75rem;
+  font-weight: 600;
+  background: #e8f8f0;
+  color: var(--verde-escuro);
+  margin-bottom: .4rem;
+}
+
+.empty { text-align: center; color: #999; padding: 2rem 0; font-size: .95rem; }
+
+/* ── TABS ── */
+.tabs {
+  display: flex;
+  margin-bottom: 1.2rem;
+  border-bottom: 2px solid var(--borda);
+}
+.tab {
+  flex: 1;
+  text-align: center;
+  padding: .6rem;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: .92rem;
+  color: #888;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+}
+.tab.active { color: var(--verde-escuro); border-bottom-color: var(--verde); }
+
+/* ── DETALHE ── */
+.detalhe-label {
+  font-size: .8rem;
+  color: #888;
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-top: .9rem;
+}
+.detalhe-valor { font-size: .97rem; margin-top: .15rem; }
+.detalhe-criado { color: #999; font-size: .85rem; }
+.detalhe-cancelar { margin-top: 1.5rem; }

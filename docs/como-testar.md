@@ -4,6 +4,17 @@
 
 ---
 
+## Estrutura do projeto
+
+```
+src/
+  backend/      ← código Node.js (rotas, controllers, models, middlewares)
+  frontend/     ← interface web (index.html, css/style.css, js/app.js)
+  package.json  ← ponto de entrada: "dev": "nodemon backend/server.js"
+```
+
+---
+
 ## 1. Subindo o servidor
 
 ```bash

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CorreJunto</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<header>
+  <h1>🏃 CorreJunto</h1>
+  <button id="btn-logout" class="hidden">Sair</button>
+</header>
+
+<main>
+
+  <!-- ── VIEW: AUTH ── -->
+  <div id="view-auth">
+    <div class="card">
+      <div class="tabs">
+        <div class="tab active" data-tab="login">Entrar</div>
+        <div class="tab" data-tab="cadastro">Cadastrar</div>
+      </div>
+
+      <div id="msg-auth"></div>
+
+      <!-- Login -->
+      <form id="form-login">
+        <div class="field">
+          <label>E-mail</label>
+          <input type="email" id="login-email" placeholder="seu@email.com" required />
+        </div>
+        <div class="field">
+          <label>Senha</label>
+          <input type="password" id="login-senha" placeholder="Mínimo 6 caracteres" required />
+        </div>
+        <button type="submit" class="btn btn-primary">Entrar</button>
+      </form>
+
+      <!-- Cadastro -->
+      <form id="form-cadastro" class="hidden">
+        <div class="field">
+          <label>Nome</label>
+          <input type="text" id="cad-nome" placeholder="Seu nome completo" required />
+        </div>
+        <div class="field">
+          <label>E-mail</label>
+          <input type="email" id="cad-email" placeholder="seu@email.com" required />
+        </div>
+        <div class="field">
+          <label>Senha</label>
+          <input type="password" id="cad-senha" placeholder="Mínimo 6 caracteres" required />
+        </div>
+        <button type="submit" class="btn btn-primary">Criar conta</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ── VIEW: TREINOS ── -->
+  <div id="view-treinos" class="hidden">
+    <div class="lista-header">
+      <span id="saudacao"></span>
+      <button class="btn btn-primary" onclick="mostrarCriar()">+ Novo treino</button>
+    </div>
+
+    <div id="msg-treinos"></div>
+    <div id="lista-treinos"></div>
+  </div>
+
+  <!-- ── VIEW: CRIAR TREINO ── -->
+  <div id="view-criar" class="hidden">
+    <button class="btn-voltar" onclick="mostrarTreinos()">← Voltar</button>
+    <div class="card">
+      <h2>Novo treino</h2>
+      <div id="msg-criar"></div>
+      <form id="form-criar">
+        <div class="field">
+          <label>Tipo de treino</label>
+          <select id="criar-tipo" required>
+            <option value="">Selecione...</option>
+            <option value="corrida_leve">Corrida leve</option>
+            <option value="intervalado">Intervalado</option>
+            <option value="longao">Longão</option>
+          </select>
+        </div>
+        <div class="row">
+          <div class="field">
+            <label>Data</label>
+            <input type="date" id="criar-data" required />
+          </div>
+          <div class="field">
+            <label>Horário</label>
+            <input type="time" id="criar-horario" required />
+          </div>
+        </div>
+        <div class="field">
+          <label>Local do encontro</label>
+          <input type="text" id="criar-local" placeholder="Ex: Parque Municipal - Portão 2" required />
+        </div>
+        <div class="field">
+          <label>Pace esperado <span style="font-weight:400;color:#aaa;">(opcional)</span></label>
+          <input type="text" id="criar-pace" placeholder="Ex: 5:30/km" />
+        </div>
+        <div class="field">
+          <label>Descrição <span style="font-weight:400;color:#aaa;">(opcional)</span></label>
+          <textarea id="criar-descricao" placeholder="Detalhes do treino..."></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Criar treino</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ── VIEW: DETALHE ── -->
+  <div id="view-detalhe" class="hidden">
+    <button class="btn-voltar" onclick="mostrarTreinos()">← Voltar à lista</button>
+    <div class="card" id="detalhe-conteudo"></div>
+  </div>
+
+</main>
+
+<script src="js/app.js"></script>
+</body>
+</html>
