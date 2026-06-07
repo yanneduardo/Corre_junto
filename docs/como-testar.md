@@ -1,8 +1,6 @@
-# Como Testar a API CorreJunto
+# Como Testar o CorreJunto
 
-> Guia direto ao ponto para testar todos os endpoints da Sprint 1.  
-> Ferramenta recomendada: **Postman** ou **Thunder Client** (extensão do VS Code).  
-> Alternativa via terminal: **curl** (exemplos incluídos para tudo).
+> Guia de demonstração para a Sprint 1 — cobre tanto o **frontend** (navegador) quanto a **API** (Postman / curl).
 
 ---
 
@@ -19,7 +17,63 @@ O servidor responde em: `http://localhost:3000`
 
 ---
 
-## 2. Verificando se está no ar
+## 2. Demonstração pelo Frontend (recomendado para a aula)
+
+Abra o navegador em **`http://localhost:3000`**. Não é necessário instalar nada extra.
+
+### Roteiro visual — passo a passo
+
+#### Passo 1 — Cadastro
+1. A tela abre na aba **Entrar**. Clique na aba **Cadastrar**.
+2. Preencha nome, e-mail e senha (mínimo 6 caracteres).
+3. Clique em **Criar conta**.
+4. O sistema redireciona automaticamente para a lista de treinos.
+
+> **O que mostrar:** a mensagem de boas-vindas com o nome do usuário aparece no topo da lista.
+
+#### Passo 2 — Criar um treino
+1. Clique em **+ Novo treino**.
+2. Selecione o tipo: `Longão`.
+3. Escolha uma data futura no calendário e um horário.
+4. Preencha o local: `Parque Municipal - Portão Principal`.
+5. (Opcional) Informe o pace: `6:00/km` e uma descrição.
+6. Clique em **Criar treino**.
+7. A lista aparece com o treino criado.
+
+> **O que mostrar:** o card do treino exibe tipo, data, horário, local, criador e número de participantes.
+
+#### Passo 3 — Ver detalhes
+1. Clique em **Ver** no card do treino.
+2. A tela de detalhe exibe todas as informações.
+3. Como é o criador, o botão **Cancelar este treino** aparece.
+
+#### Passo 4 — Criar um segundo usuário (aba anônima)
+1. Abra uma **aba anônima** do navegador e acesse `http://localhost:3000`.
+2. Cadastre um segundo usuário com outro e-mail.
+3. Este usuário vê o treino criado pelo primeiro na lista.
+4. Ao abrir o detalhe, **não aparece** o botão de cancelar — apenas o criador pode.
+
+> **O que mostrar:** isolamento de permissões e que sessões diferentes coexistem.
+
+#### Passo 5 — Cancelar o treino (voltar para o primeiro usuário)
+1. Na aba original (primeiro usuário), abra o detalhe do treino.
+2. Clique em **Cancelar este treino** → confirme.
+3. Volte à lista: ela fica **vazia** — treinos cancelados não aparecem.
+
+#### Passo 6 — Demonstrar proteção de rota
+1. Abra `http://localhost:3000` em outra aba anônima **sem fazer login**.
+2. A tela de login é exibida automaticamente — sem acesso à lista.
+3. Ou, no DevTools (F12 → Console), execute:
+   ```js
+   fetch('/treinos').then(r => r.json()).then(console.log)
+   ```
+   Resultado: `{ erro: "Token de autenticação não fornecido." }`
+
+---
+
+---
+
+## 3. Verificando se a API está no ar
 
 ```
 GET http://localhost:3000/health
@@ -35,9 +89,9 @@ GET http://localhost:3000/health
 
 ---
 
-## 3. Autenticação
+## 4. Autenticação (via Postman / curl)
 
-### 3.1 Cadastro de usuário
+### 4.1 Cadastro de usuário
 
 ```
 POST http://localhost:3000/auth/cadastro
@@ -78,7 +132,7 @@ Content-Type: application/json
 
 ---
 
-### 3.2 Login
+### 4.2 Login
 
 ```
 POST http://localhost:3000/auth/login
@@ -115,7 +169,7 @@ Content-Type: application/json
 
 ---
 
-### 3.3 Verificar usuário logado
+### 4.3 Verificar usuário logado
 
 ```
 GET http://localhost:3000/auth/me
@@ -136,7 +190,7 @@ Authorization: Bearer <seu_token_aqui>
 
 ---
 
-## 4. Treinos
+## 5. Treinos (via Postman / curl)
 
 > Todos os endpoints de treino exigem o header:
 > ```
@@ -145,7 +199,7 @@ Authorization: Bearer <seu_token_aqui>
 
 ---
 
-### 4.1 Criar treino
+### 5.1 Criar treino
 
 ```
 POST http://localhost:3000/treinos
@@ -218,7 +272,7 @@ Authorization: Bearer <seu_token_aqui>
 
 ---
 
-### 4.2 Listar treinos ativos
+### 5.2 Listar treinos ativos
 
 ```
 GET http://localhost:3000/treinos
@@ -248,7 +302,7 @@ Authorization: Bearer <seu_token_aqui>
 
 ---
 
-### 4.3 Ver detalhes de um treino
+### 5.3 Ver detalhes de um treino
 
 Substitua `:id` pelo `id` do treino criado.
 
@@ -266,7 +320,7 @@ Authorization: Bearer <seu_token_aqui>
 
 ---
 
-### 4.4 Cancelar treino
+### 5.4 Cancelar treino
 
 > Somente o **criador** do treino pode cancelar.
 
@@ -296,7 +350,7 @@ Authorization: Bearer <seu_token_aqui>
 
 ---
 
-## 5. Cenários de erro comuns
+## 6. Cenários de erro comuns
 
 ### Sem token
 ```
@@ -320,40 +374,36 @@ Authorization: Bearer token_invalido_aqui
 
 ---
 
-## 6. Roteiro completo de demonstração (ordem recomendada)
+## 7. Roteiro via Postman (complemento ao front)
 
-Siga esta sequência para mostrar o sistema funcionando do zero:
+Use para mostrar as respostas JSON brutas da API enquanto o front está aberto:
 
 ```
-1. GET  /health                          → confirma que o servidor está no ar
+1. GET  /health                          → confirma servidor no ar
 
-2. POST /auth/cadastro                   → cria usuário "Ana Lima"
+2. POST /auth/cadastro                   → cria usuário, retorna token JWT
    ↳ copiar o token da resposta
 
-3. POST /auth/login                      → faz login com as mesmas credenciais
-   ↳ confirma que o token é gerado novamente
+3. POST /auth/login                      → mesmo e-mail/senha → novo token
 
-4. GET  /auth/me                         → mostra os dados do usuário logado
+4. GET  /auth/me  (com token)            → mostra dados do usuário logado
 
-5. GET  /treinos                         → lista vazia (nenhum treino ainda)
+5. GET  /treinos  (com token)            → lista treinos criados no front
 
-6. POST /treinos                         → cria treino "Longão de domingo"
+6. POST /treinos  (com token)            → cria treino via API diretamente
    ↳ copiar o id do treino da resposta
 
-7. GET  /treinos                         → agora aparece 1 treino na lista
+7. GET  /treinos/:id  (com token)        → detalhe do treino criado
 
-8. GET  /treinos/:id                     → detalhe completo do treino criado
+8. DELETE /treinos/:id  (com token)      → cancela o treino
+   ↳ atualizar o front: treino some da lista
 
-9. DELETE /treinos/:id                   → cancela o treino
-
-10. GET /treinos                         → lista vazia novamente (cancelado não aparece)
-
-11. GET /treinos                         → sem token → erro 401 (demonstra autenticação)
+9. GET  /treinos  (sem token)            → erro 401 — demonstra proteção de rota
 ```
 
 ---
 
-## 7. Testando via curl (terminal)
+## 8. Testando via curl (terminal)
 
 Se preferir usar o terminal, aqui está o script completo:
 
