@@ -111,6 +111,49 @@
     </div>
   </div>
 
+  <!-- ── VIEW: EDITAR TREINO ── -->
+  <div id="view-editar" class="hidden">
+    <button class="btn-voltar" onclick="mostrarTreinos()">← Voltar</button>
+    <div class="card">
+      <h2>Editar treino</h2>
+      <div id="msg-editar"></div>
+      <form id="form-editar">
+        <div class="field">
+          <label>Tipo de treino</label>
+          <select id="editar-tipo" required>
+            <option value="">Selecione...</option>
+            <option value="corrida_leve">Corrida leve</option>
+            <option value="intervalado">Intervalado</option>
+            <option value="longao">Longão</option>
+          </select>
+        </div>
+        <div class="row">
+          <div class="field">
+            <label>Data</label>
+            <input type="date" id="editar-data" required />
+          </div>
+          <div class="field">
+            <label>Horário</label>
+            <input type="time" id="editar-horario" required />
+          </div>
+        </div>
+        <div class="field">
+          <label>Local do encontro</label>
+          <input type="text" id="editar-local" placeholder="Ex: Parque Municipal - Portão 2" required />
+        </div>
+        <div class="field">
+          <label>Pace esperado <span style="font-weight:400;color:#aaa;">(opcional)</span></label>
+          <input type="text" id="editar-pace" placeholder="Ex: 5:30/km" />
+        </div>
+        <div class="field">
+          <label>Descrição <span style="font-weight:400;color:#aaa;">(opcional)</span></label>
+          <textarea id="editar-descricao" placeholder="Detalhes do treino..."></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Salvar alterações</button>
+      </form>
+    </div>
+  </div>
+
   <!-- ── VIEW: DETALHE ── -->
   <div id="view-detalhe" class="hidden">
     <button class="btn-voltar" onclick="mostrarTreinos()">← Voltar à lista</button>

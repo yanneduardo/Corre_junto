@@ -1,6 +1,7 @@
 const API = '';
 let token = localStorage.getItem('cj_token');
 let usuarioAtual = JSON.parse(localStorage.getItem('cj_usuario') || 'null');
+let treinoEditandoId = null;
 
 // ── UTILITÁRIOS ──────────────────────────────────────────────────────────────
 
@@ -15,7 +16,7 @@ function limparMsg(elId) {
 }
 
 function mostrarView(id) {
-  ['view-auth', 'view-treinos', 'view-criar', 'view-detalhe']
+  ['view-auth', 'view-treinos', 'view-criar', 'view-editar', 'view-detalhe']
     .forEach(v => $(v).classList.add('hidden'));
   $(id).classList.remove('hidden');
 }
@@ -34,7 +35,9 @@ function tipoLabel(tipo) {
 }
 
 function formatarData(iso) {
-  const [ano, mes, dia] = iso.split('-');
+  if (!iso) return '';
+  const dataStr = typeof iso === 'string' ? iso.split('T')[0] : iso.toISOString().split('T')[0];
+  const [ano, mes, dia] = dataStr.split('-');
   return `${dia}/${mes}/${ano}`;
 }
 
@@ -226,10 +229,57 @@ async function verDetalhe(id) {
 
     ${ehCriador ? `
       <div class="detalhe-cancelar">
+        <button class="btn btn-secondary" onclick="mostrarEditar('${data.id}')">Editar treino</button>
         <button class="btn btn-danger" onclick="cancelarTreino('${data.id}')">Cancelar este treino</button>
       </div>` : ''}
   `;
 }
+
+async function mostrarEditar(id) {
+  const { ok, data } = await apiFetch(`/treinos/${id}`);
+  if (!ok) {
+    return alert(data.erro || 'Não foi possível carregar o treino para edição.');
+  }
+
+  treinoEditandoId = id;
+  limparMsg('msg-editar');
+  $('editar-tipo').value = data.tipo || '';
+  $('editar-data').value = data.data ? data.data.split('T')[0] : '';
+  $('editar-horario').value = data.horario ? data.horario.slice(0, 5) : '';
+  $('editar-local').value = data.local || '';
+  $('editar-pace').value = data.paceEsperado || '';
+  $('editar-descricao').value = data.descricao || '';
+  mostrarView('view-editar');
+}
+
+$('form-editar').addEventListener('submit', async e => {
+  e.preventDefault();
+  limparMsg('msg-editar');
+
+  if (!treinoEditandoId) {
+    return mostrarMsg('msg-editar', 'Nenhum treino selecionado para edição.');
+  }
+
+  const horario = $('editar-horario').value.slice(0, 5);
+
+  const body = {
+    data:         $('editar-data').value,
+    horario,
+    local:        $('editar-local').value,
+    tipo:         $('editar-tipo').value,
+    paceEsperado: $('editar-pace').value || undefined,
+    descricao:    $('editar-descricao').value || undefined,
+  };
+
+  const { ok, data } = await apiFetch(`/treinos/${treinoEditandoId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(body),
+  });
+  if (!ok) return mostrarMsg('msg-editar', data.erro);
+
+  treinoEditandoId = null;
+  mostrarTreinos();
+});
 
 // ── INIT ─────────────────────────────────────────────────────────────────────
 inicializar();

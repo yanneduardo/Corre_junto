@@ -23,7 +23,7 @@ const authController = {
       return res.status(400).json({ erro: 'A senha deve ter pelo menos 6 caracteres.' });
     }
 
-    const existente = UsuarioModel.buscarPorEmail(email);
+    const existente = await UsuarioModel.buscarPorEmail(email);
     if (existente) {
       return res.status(409).json({ erro: 'E-mail já cadastrado.' });
     }
@@ -45,7 +45,7 @@ const authController = {
       return res.status(400).json({ erro: 'E-mail e senha são obrigatórios.' });
     }
 
-    const usuario = UsuarioModel.buscarPorEmail(email);
+    const usuario = await UsuarioModel.buscarPorEmail(email);
     if (!usuario) {
       return res.status(401).json({ erro: 'Credenciais inválidas.' });
     }
