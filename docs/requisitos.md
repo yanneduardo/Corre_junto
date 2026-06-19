@@ -46,6 +46,12 @@ Como corredor, quero divulgar provas de corrida na plataforma para ajudar outras
 
 ---
 
+# Diagrama de Casos de Uso
+
+![Diagrama de Casos de Uso](casos-de-uso.png)
+
+---
+
 # Requisitos Funcionais
 
 ## RF01 — Cadastro de usuários

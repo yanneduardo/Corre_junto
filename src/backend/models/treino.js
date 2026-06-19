@@ -146,6 +146,16 @@ const TreinoModel = {
       atualizadoEm: r.atualizado_em,
     };
   },
+  removerParticipante(id, usuarioId) {
+    const treino = db.treinos.find((t) => t.id === id);
+    if (!treino) return null;
+    const idx = treino.participantes.indexOf(usuarioId);
+    if (idx === -1) return treino;
+    treino.participantes.splice(idx, 1);
+    treino.atualizadoEm = new Date().toISOString();
+    return treino;
+  },
+
   TIPOS_VALIDOS,
   STATUS,
 };

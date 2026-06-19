@@ -232,6 +232,10 @@ async function verDetalhe(id) {
         <button class="btn btn-secondary" onclick="mostrarEditar('${data.id}')">Editar treino</button>
         <button class="btn btn-danger" onclick="cancelarTreino('${data.id}')">Cancelar este treino</button>
       </div>` : ''}
+    ${!ehCriador && data.participantes && data.participantes.includes(usuarioAtual?.id) ? `
+      <div class="detalhe-sair">
+        <button class="btn btn-warning" onclick="sairTreino('${data.id}')">Sair do treino</button>
+      </div>` : ''}
   `;
 }
 
@@ -280,6 +284,14 @@ $('form-editar').addEventListener('submit', async e => {
   treinoEditandoId = null;
   mostrarTreinos();
 });
+
+async function sairTreino(id) {
+  if (!confirm('Tem certeza que deseja sair deste treino?')) return;
+  const { ok, data } = await apiFetch(`/treinos/${id}/sair`, { method: 'POST' });
+  if (!ok) return alert(data.erro || 'Erro ao tentar sair do treino.');
+  // Recarrega os detalhes para refletir a mudança
+  verDetalhe(id);
+}
 
 // ── INIT ─────────────────────────────────────────────────────────────────────
 inicializar();
