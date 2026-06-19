@@ -6,7 +6,7 @@ const treinoController = {
    * POST /treinos
    * Cria um novo treino em grupo.
    */
-  criar(req, res) {
+  async criar(req, res) {
     const { data, horario, local, tipo, descricao, paceEsperado } = req.body;
 
     if (!data || !horario || !local || !tipo) {
@@ -31,7 +31,7 @@ const treinoController = {
       return res.status(400).json({ erro: 'Horário inválido. Use o formato HH:MM.' });
     }
 
-    const treino = TreinoModel.criar({
+    const treino = await TreinoModel.criar({
       data,
       horario,
       local,
@@ -43,7 +43,19 @@ const treinoController = {
 
     return res.status(201).json({
       mensagem: 'Treino criado com sucesso.',
-      treino: _enriquecerTreino(treino),
+      treino: {
+        id: treino.id,
+        data: treino.data,
+        horario: treino.horario,
+        local: treino.local,
+        tipo: treino.tipo,
+        descricao: treino.descricao,
+        paceEsperado: treino.paceEsperado,
+        criadorId: treino.criadorId,
+        status: treino.status,
+        totalParticipantes: 1,
+        participando: true,
+      },
     });
   },
 
@@ -51,45 +63,102 @@ const treinoController = {
    * GET /treinos
    * Lista todos os treinos ativos com dados resumidos.
    */
-  listar(req, res) {
-    const ativos = TreinoModel.listarAtivos();
-    return res.json({
-      total: ativos.length,
-      treinos: ativos.map(_enriquecerTreino),
-    });
+  async listar(req, res) {
+    const ativos = await TreinoModel.listarAtivosParaUsuario(req.usuario.id);
+    const treinos = ativos.map((t) => ({
+      id: t.id,
+      data: t.data,
+      horario: t.horario,
+      local: t.local,
+      tipo: t.tipo,
+      descricao: t.descricao,
+      paceEsperado: t.paceEsperado,
+      status: t.status,
+      criadorId: t.criadorId,
+      criador: { id: t.criadorId, nome: t.criadorNome },
+      totalParticipantes: t.totalParticipantes,
+      participando: t.participando,
+    }));
+    return res.json({ total: treinos.length, treinos });
   },
 
   /**
    * GET /treinos/:id
    * Retorna os detalhes completos de um treino.
    */
-  buscarPorId(req, res) {
-    const treino = TreinoModel.buscarPorId(req.params.id);
-    if (!treino) {
-      return res.status(404).json({ erro: 'Treino não encontrado.' });
-    }
-    return res.json(_enriquecerTreino(treino));
+  async buscarPorId(req, res) {
+    const treino = await TreinoModel.buscarPorIdComUsuario(req.params.id, req.usuario.id);
+    if (!treino) return res.status(404).json({ erro: 'Treino não encontrado.' });
+    return res.json({
+      id: treino.id,
+      data: treino.data,
+      horario: treino.horario,
+      local: treino.local,
+      tipo: treino.tipo,
+      descricao: treino.descricao,
+      paceEsperado: treino.paceEsperado,
+      status: treino.status,
+      criadorId: treino.criadorId,
+      criador: { id: treino.criadorId, nome: treino.criadorNome },
+      totalParticipantes: treino.totalParticipantes,
+      participando: treino.participando,
+    });
   },
 
   /**
    * DELETE /treinos/:id
    * Cancela um treino. Apenas o criador pode realizar esta ação.
    */
-  cancelar(req, res) {
-    const treino = TreinoModel.buscarPorId(req.params.id);
-    if (!treino) {
-      return res.status(404).json({ erro: 'Treino não encontrado.' });
+  async atualizar(req, res) {
+    const { data, horario, local, tipo, descricao, paceEsperado } = req.body;
+    const treino = await TreinoModel.buscarPorIdComUsuario(req.params.id, req.usuario.id);
+    if (!treino) return res.status(404).json({ erro: 'Treino não encontrado.' });
+
+    if (treino.criadorId !== req.usuario.id) return res.status(403).json({ erro: 'Apenas o criador pode atualizar este treino.' });
+
+    if (treino.status === TreinoModel.STATUS.CANCELADO) return res.status(409).json({ erro: 'Não é possível atualizar um treino cancelado.' });
+
+    if (!data || !horario || !local || !tipo) {
+      return res.status(400).json({ erro: 'Os campos data, horario, local e tipo são obrigatórios.' });
     }
 
-    if (treino.criadorId !== req.usuario.id) {
-      return res.status(403).json({ erro: 'Apenas o criador pode cancelar este treino.' });
+    if (!TreinoModel.TIPOS_VALIDOS.includes(tipo)) {
+      return res.status(400).json({ erro: `Tipo de treino inválido. Valores aceitos: ${TreinoModel.TIPOS_VALIDOS.join(', ')}.` });
     }
 
-    if (treino.status === TreinoModel.STATUS.CANCELADO) {
-      return res.status(409).json({ erro: 'Este treino já foi cancelado.' });
+    const REGEX_DATA = /^\d{4}-\d{2}-\d{2}$/;
+    if (!REGEX_DATA.test(data)) {
+      return res.status(400).json({ erro: 'Data inválida. Use o formato AAAA-MM-DD.' });
     }
 
-    const atualizado = TreinoModel.cancelar(treino.id);
+    const REGEX_HORARIO = /^\d{2}:\d{2}$/;
+    if (!REGEX_HORARIO.test(horario)) {
+      return res.status(400).json({ erro: 'Horário inválido. Use o formato HH:MM.' });
+    }
+
+    const atualizado = await TreinoModel.atualizar(req.params.id, {
+      data,
+      horario,
+      local,
+      tipo,
+      descricao,
+      paceEsperado,
+    });
+
+    if (!atualizado) return res.status(404).json({ erro: 'Treino não encontrado.' });
+
+    return res.json({ mensagem: 'Treino atualizado com sucesso.', treino: atualizado });
+  },
+
+  async cancelar(req, res) {
+    const treino = await TreinoModel.buscarPorIdComUsuario(req.params.id, req.usuario.id);
+    if (!treino) return res.status(404).json({ erro: 'Treino não encontrado.' });
+
+    if (treino.criadorId !== req.usuario.id) return res.status(403).json({ erro: 'Apenas o criador pode cancelar este treino.' });
+
+    if (treino.status === TreinoModel.STATUS.CANCELADO) return res.status(409).json({ erro: 'Este treino já foi cancelado.' });
+
+    const atualizado = await TreinoModel.cancelar(treino.id);
     return res.json({ mensagem: 'Treino cancelado com sucesso.', treino: atualizado });
   },
 
@@ -116,17 +185,5 @@ const treinoController = {
     return res.json({ mensagem: 'Você saiu do treino.', treino: _enriquecerTreino(atualizado) });
   },
 };
-
-/**
- * Adiciona o nome do criador ao objeto treino para a resposta.
- */
-function _enriquecerTreino(treino) {
-  const criador = UsuarioModel.buscarPorId(treino.criadorId);
-  return {
-    ...treino,
-    criador: criador ? { id: criador.id, nome: criador.nome } : null,
-    totalParticipantes: treino.participantes.length,
-  };
-}
 
 module.exports = treinoController;
