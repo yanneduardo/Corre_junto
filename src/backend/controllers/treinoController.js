@@ -92,6 +92,29 @@ const treinoController = {
     const atualizado = TreinoModel.cancelar(treino.id);
     return res.json({ mensagem: 'Treino cancelado com sucesso.', treino: atualizado });
   },
+
+  /**
+   * POST /treinos/:id/sair
+   * Remove o usuário autenticado da lista de participantes.
+   */
+  sair(req, res) {
+    const treino = TreinoModel.buscarPorId(req.params.id);
+    if (!treino) {
+      return res.status(404).json({ erro: 'Treino não encontrado.' });
+    }
+
+    if (treino.status === TreinoModel.STATUS.CANCELADO) {
+      return res.status(409).json({ erro: 'Não é possível sair de um treino cancelado.' });
+    }
+
+    const participanteId = req.usuario.id;
+    if (!treino.participantes.includes(participanteId)) {
+      return res.status(400).json({ erro: 'Você não é participante deste treino.' });
+    }
+
+    const atualizado = TreinoModel.removerParticipante(treino.id, participanteId);
+    return res.json({ mensagem: 'Você saiu do treino.', treino: _enriquecerTreino(atualizado) });
+  },
 };
 
 /**
