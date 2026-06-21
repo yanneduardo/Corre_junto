@@ -109,3 +109,192 @@ Desenvolver um sistema simples e funcional que permita:
 - Lucas Arthur Menezes Freire  
 - Lucas Oliveira Brandão 
 - Victor  
+
+---
+
+## 🚀 Como Começar
+
+### Instalação
+
+```bash
+# Clonar repositório
+git clone <url-do-repositorio>
+cd Corre_junto
+
+# Instalar dependências do backend
+cd src
+npm install
+
+# Configurar arquivo .env (ver exemplo em .env.example)
+# Necessário:
+# - DB_HOST
+# - DB_USER
+# - DB_PASSWORD
+# - DB_NAME
+# - JWT_SECRET
+```
+
+### Executar
+
+```bash
+# Desenvolvimento (com hot-reload)
+npm run dev
+
+# Produção
+npm start
+```
+
+---
+
+## 🧪 Testes e Qualidade
+
+### Executar Testes
+
+```bash
+npm test                 # Rodar todos os testes
+npm test:watch          # Modo watch (reexecuta ao salvar)
+npm run test:coverage   # Gerar relatório de cobertura (opcional)
+```
+
+### Cobertura de Testes
+
+✅ **100% de cobertura** nos arquivos críticos:
+- `usuarioController.js` - 100%
+- `usuario.js` (Model) - 100%
+
+- **24 testes** automatizados
+- **0 falhas** de testes
+- **Validações completas** de dados e permissões
+
+### Documentação
+
+- 📡 [**API_ENDPOINTS.md**](API_ENDPOINTS.md) - Exemplos de requisições/respostas
+- 📚 [**TESTING.md**](TESTING.md) - Guia de testes
+- 🗄️ [**DATABASE.md**](DATABASE.md) - Estrutura do banco de dados
+- 💻 [**FRONTEND_GUIDE.md**](FRONTEND_GUIDE.md) - Como usar os endpoints no frontend
+
+---
+
+## 📋 Funcionalidades Implementadas
+
+### ✅ Perfil de Usuário (v1.0)
+
+#### Endpoints
+- `GET /usuarios/:id` - Ver perfil público
+- `PUT /usuarios/:id/bio` - Editar bio e nível de corrida
+- `GET /usuarios/:id/training-stats` - Obter estatísticas de treinos
+
+#### Validações
+- ✅ Bio (máx 500 caracteres)
+- ✅ Running Level (iniciante, intermediario, avancado)
+- ✅ Email normalizado (minúsculas, sem espaços)
+- ✅ Permissões (usuário só edita seu próprio perfil)
+
+#### Segurança
+- ✅ JWT autenticado
+- ✅ Senhas com bcrypt
+- ✅ Validação de dados na entrada
+
+---
+
+## 🛠️ Stack Tecnológico
+
+### Backend
+- **Node.js** + Express
+- **MySQL 8.0**
+- **JWT** para autenticação
+- **bcryptjs** para hash de senhas
+
+### Frontend
+- **HTML5**
+- **CSS3**
+- **JavaScript Vanilla**
+
+### Testes
+- **Jest** - Framework de testes
+- **Supertest** - Testes de API
+
+---
+
+## 📊 Estrutura do Projeto
+
+```
+Corre_junto/
+├── src/
+│   ├── backend/
+│   │   ├── controllers/
+│   │   │   ├── usuarioController.js
+│   │   │   ├── authController.js
+│   │   │   └── ...
+│   │   ├── models/
+│   │   │   ├── usuario.js
+│   │   │   └── ...
+│   │   ├── routes/
+│   │   │   ├── usuarios.js
+│   │   │   ├── auth.js
+│   │   │   └── ...
+│   │   ├── middlewares/
+│   │   │   └── auth.js
+│   │   ├── __tests__/
+│   │   │   ├── usuario.test.js
+│   │   │   └── controller.test.js
+│   │   ├── config/
+│   │   │   └── database.js
+│   │   ├── app.js
+│   │   └── server.js
+│   └── frontend/
+│       ├── index.html
+│       ├── css/
+│       └── js/
+├── API_ENDPOINTS.md
+├── TESTING.md
+├── DATABASE.md
+├── FRONTEND_GUIDE.md
+└── README.md
+```
+
+---
+
+## 🔐 Variáveis de Ambiente (.env)
+
+```env
+# Banco de Dados
+DB_HOST=localhost
+DB_PORT=3306
+DB_USER=root
+DB_PASSWORD=sua_senha
+DB_NAME=corre_junto
+
+# JWT
+JWT_SECRET=sua_chave_secreta_aqui
+
+# Servidor
+PORT=3000
+NODE_ENV=development
+```
+
+---
+
+## 📈 Próximas Funcionalidades
+
+- [ ] Upload de foto de perfil
+- [ ] Sistema de avaliação entre usuários
+- [ ] Filtro de treinos por localização
+- [ ] Integração com Google Calendar
+- [ ] Notificações por email
+- [ ] Chat interno
+
+---
+
+## 🐛 Reportar Bugs
+
+Para reportar bugs, abra uma issue no repositório com:
+- Descrição clara do problema
+- Passos para reproduzir
+- Comportamento esperado vs atual
+
+---
+
+## 📝 Licença
+
+Este projeto está sob licença ISC.
