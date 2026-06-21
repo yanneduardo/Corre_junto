@@ -28,6 +28,8 @@ header {
 }
 header h1 { font-size: 1.2rem; letter-spacing: 1px; }
 
+.header-acoes { display: flex; gap: .6rem; align-items: center; }
+
 #btn-logout {
   background: rgba(0,0,0,0.15);
   border: none;
@@ -38,6 +40,18 @@ header h1 { font-size: 1.2rem; letter-spacing: 1px; }
   font-size: .85rem;
 }
 #btn-logout:hover { background: rgba(0,0,0,0.3); }
+
+#btn-perfil {
+  background: rgba(255,255,255,0.2);
+  border: none;
+  color: #fff;
+  padding: .4rem .9rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: .85rem;
+  font-weight: 600;
+}
+#btn-perfil:hover { background: rgba(255,255,255,0.32); }
 
 /* ── LAYOUT ── */
 main { max-width: 640px; margin: 2rem auto; padding: 0 1rem; }
@@ -182,4 +196,9 @@ main { max-width: 640px; margin: 2rem auto; padding: 0 1rem; }
 }
 .detalhe-valor { font-size: .97rem; margin-top: .15rem; }
 .detalhe-criado { color: #999; font-size: .85rem; }
-.detalhe-cancelar { margin-top: 1.5rem; }
+.detalhe-cancelar { margin-top: 1.5rem; display: flex; gap: .6rem; }
+.detalhe-cancelar .btn { width: auto; }
+
+#perfil-contador { font-size: .78rem; color: #999; }
+#form-perfil .row .btn { width: auto; }
+#perfil-bio { white-space: pre-wrap; }
