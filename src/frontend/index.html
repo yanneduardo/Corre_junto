@@ -166,6 +166,11 @@
 
       <!-- Modo leitura -->
       <div id="perfil-leitura">
+        <div class="avatar-wrap">
+          <img id="perfil-foto" class="avatar-img hidden" alt="Foto de perfil" />
+          <div id="perfil-foto-placeholder" class="avatar-placeholder">👤</div>
+        </div>
+
         <div class="detalhe-label">Nome</div>
         <div class="detalhe-valor" id="perfil-nome"></div>
 
@@ -180,6 +185,19 @@
 
       <!-- Modo edição -->
       <form id="form-perfil" class="hidden">
+        <div class="field">
+          <label>Foto de perfil <span style="font-weight:400;color:#aaa;">(JPG ou PNG, máx. 5MB)</span></label>
+          <div class="avatar-wrap">
+            <img id="perfil-edit-preview" class="avatar-img hidden" alt="Pré-visualização da foto" />
+            <div id="perfil-edit-preview-placeholder" class="avatar-placeholder">👤</div>
+          </div>
+          <input type="file" id="perfil-edit-foto-input" accept="image/jpeg,image/jpg,image/png" class="hidden" />
+          <div class="row" style="margin-top:.5rem;">
+            <button type="button" class="btn btn-secondary" id="btn-escolher-foto">Escolher foto</button>
+            <button type="button" class="btn btn-danger hidden" id="btn-remover-foto">Remover foto</button>
+          </div>
+          <span id="perfil-foto-erro" class="msg msg-erro hidden" style="margin-top:.5rem;"></span>
+        </div>
         <div class="field">
           <label>Nível de corrida</label>
           <select id="perfil-edit-nivel">
@@ -201,7 +219,7 @@
       </form>
     </div>
   </div>
-
+    
   <!-- ── VIEW: DETALHE ── -->
   <div id="view-detalhe" class="hidden">
     <button class="btn-voltar" onclick="mostrarTreinos()">← Voltar à lista</button>
