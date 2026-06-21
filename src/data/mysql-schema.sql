@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS usuarios (
   senha_hash VARCHAR(255) NOT NULL,
   bio VARCHAR(500) NULL,
   running_level ENUM('iniciante','intermediario','avancado') NULL,
+  profile_picture_url VARCHAR(500) NULL,
   criado_em DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
