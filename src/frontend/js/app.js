@@ -16,9 +16,14 @@ function limparMsg(elId) {
 }
 
 function mostrarView(id) {
-  ['view-auth', 'view-treinos', 'view-criar', 'view-editar', 'view-detalhe']
+  ['view-auth', 'view-treinos', 'view-criar', 'view-editar', 'view-detalhe', 'view-perfil']
     .forEach(v => $(v).classList.add('hidden'));
   $(id).classList.remove('hidden');
+}
+
+function nivelLabel(nivel) {
+  const labels = { iniciante: 'Iniciante', intermediario: 'Intermediário', avancado: 'Avançado' };
+  return labels[nivel] || 'Não informado';
 }
 
 async function apiFetch(path, opts = {}) {
@@ -48,7 +53,7 @@ function salvarSessao(t, u) {
   usuarioAtual = u;
   localStorage.setItem('cj_token', t);
   localStorage.setItem('cj_usuario', JSON.stringify(u));
-  $('btn-logout').classList.remove('hidden');
+  $('header-acoes').classList.remove('hidden');
 }
 
 function encerrarSessao() {
@@ -56,19 +61,18 @@ function encerrarSessao() {
   usuarioAtual = null;
   localStorage.removeItem('cj_token');
   localStorage.removeItem('cj_usuario');
-  $('btn-logout').classList.add('hidden');
+  $('header-acoes').classList.add('hidden');
   mostrarView('view-auth');
 }
 
 function inicializar() {
   if (token && usuarioAtual) {
-    $('btn-logout').classList.remove('hidden');
+    $('header-acoes').classList.remove('hidden');
     mostrarTreinos();
   } else {
     mostrarView('view-auth');
   }
 }
-
 // ── AUTH ─────────────────────────────────────────────────────────────────────
 
 document.querySelectorAll('.tab').forEach(tab => {
@@ -211,7 +215,7 @@ async function verDetalhe(id) {
     <div class="detalhe-valor">📍 ${data.local}</div>
 
     <div class="detalhe-label">Criador</div>
-    <div class="detalhe-valor">👤 ${data.criador?.nome || '—'}</div>
+    <div class="detalhe-valor">👤 <a href="#" onclick="mostrarPerfil('${data.criadorId}'); return false;">${data.criador?.nome || '—'}</a></div>
 
     <div class="detalhe-label">Participantes</div>
     <div class="detalhe-valor">👥 ${data.totalParticipantes}</div>
@@ -292,6 +296,87 @@ async function sairTreino(id) {
   // Recarrega os detalhes para refletir a mudança
   verDetalhe(id);
 }
+
+// ── PERFIL ───────────────────────────────────────────────────────────────────
+
+let perfilVisualizadoId = null;
+
+async function mostrarPerfil(usuarioId) {
+  perfilVisualizadoId = usuarioId || usuarioAtual?.id;
+  const ehMeuPerfil = perfilVisualizadoId === usuarioAtual?.id;
+
+  mostrarView('view-perfil');
+  limparMsg('msg-perfil');
+  $('perfil-leitura').classList.remove('hidden');
+  $('form-perfil').classList.add('hidden');
+  $('perfil-titulo').textContent = ehMeuPerfil ? 'Meu perfil' : 'Perfil';
+  $('btn-editar-perfil').classList.toggle('hidden', !ehMeuPerfil);
+
+  $('perfil-nome').textContent = 'Carregando...';
+  $('perfil-nivel').textContent = '';
+  $('perfil-bio').textContent = '';
+
+  const { ok, data } = await apiFetch(`/usuarios/${perfilVisualizadoId}`);
+  if (!ok) {
+    if (data.erro?.includes('Token')) { encerrarSessao(); return; }
+    return mostrarMsg('msg-perfil', data.erro || 'Não foi possível carregar o perfil.');
+  }
+
+  const u = data.usuario;
+  $('perfil-nome').textContent = u.nome;
+  $('perfil-nivel').textContent = nivelLabel(u.runningLevel);
+  $('perfil-bio').textContent = u.bio || 'Nenhuma biografia cadastrada ainda.';
+}
+
+$('btn-perfil').addEventListener('click', () => mostrarPerfil(usuarioAtual?.id));
+
+$('btn-editar-perfil').addEventListener('click', async () => {
+  limparMsg('msg-perfil');
+  const { ok, data } = await apiFetch(`/usuarios/${perfilVisualizadoId}`);
+  if (!ok) return mostrarMsg('msg-perfil', data.erro);
+
+  const u = data.usuario;
+  $('perfil-edit-nivel').value = u.runningLevel || '';
+  $('perfil-edit-bio').value = u.bio || '';
+  $('perfil-contador').textContent = `${(u.bio || '').length}/500`;
+
+  $('perfil-leitura').classList.add('hidden');
+  $('form-perfil').classList.remove('hidden');
+});
+
+$('perfil-edit-bio').addEventListener('input', () => {
+  $('perfil-contador').textContent = `${$('perfil-edit-bio').value.length}/500`;
+});
+
+$('btn-cancelar-edicao').addEventListener('click', () => {
+  $('form-perfil').classList.add('hidden');
+  $('perfil-leitura').classList.remove('hidden');
+});
+
+$('form-perfil').addEventListener('submit', async e => {
+  e.preventDefault();
+  limparMsg('msg-perfil');
+
+  const body = {
+    bio: $('perfil-edit-bio').value,
+    runningLevel: $('perfil-edit-nivel').value || null,
+  };
+
+  const { ok, data } = await apiFetch(`/usuarios/${perfilVisualizadoId}/bio`, {
+    method: 'PUT',
+    body: JSON.stringify(body),
+  });
+
+  if (!ok) return mostrarMsg('msg-perfil', data.erro);
+
+  // Atualiza o usuário local se for o próprio perfil
+  if (perfilVisualizadoId === usuarioAtual?.id) {
+    usuarioAtual = { ...usuarioAtual, ...data.usuario };
+    localStorage.setItem('cj_usuario', JSON.stringify(usuarioAtual));
+  }
+
+  mostrarPerfil(perfilVisualizadoId);
+});
 
 // ── INIT ─────────────────────────────────────────────────────────────────────
 inicializar();
