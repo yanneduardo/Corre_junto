@@ -6,10 +6,14 @@ const SALT_ROUNDS = 10;
 
 const NIVEIS_VALIDOS = ['iniciante', 'intermediario', 'avancado'];
 const BIO_MAX_LENGTH = 500;
+const TIPOS_FOTO_VALIDOS = ['image/jpeg', 'image/jpg', 'image/png'];
+const FOTO_MAX_BYTES = 5 * 1024 * 1024; // 5MB
 
 const UsuarioModel = {
   NIVEIS_VALIDOS,
   BIO_MAX_LENGTH,
+  TIPOS_FOTO_VALIDOS,
+  FOTO_MAX_BYTES,
 
   async criar({ nome, email, senha }) {
     const senhaHash = await bcrypt.hash(senha, SALT_ROUNDS);
@@ -24,13 +28,14 @@ const UsuarioModel = {
       email: email.toLowerCase().trim(),
       bio: null,
       runningLevel: null,
+      profilePictureUrl: null,
       criadoEm: new Date().toISOString(),
     };
   },
 
   async buscarPorEmail(email) {
     const [rows] = await pool.execute(
-      'SELECT id, nome, email, senha_hash, bio, running_level, criado_em FROM usuarios WHERE email = ? LIMIT 1',
+      'SELECT id, nome, email, senha_hash, bio, running_level, profile_picture_url, criado_em FROM usuarios WHERE email = ? LIMIT 1',
       [email.toLowerCase().trim()]
     );
     if (!rows || rows.length === 0) return null;
@@ -39,7 +44,7 @@ const UsuarioModel = {
 
   async buscarPorId(id) {
     const [rows] = await pool.execute(
-      'SELECT id, nome, email, senha_hash, bio, running_level, criado_em FROM usuarios WHERE id = ? LIMIT 1',
+      'SELECT id, nome, email, senha_hash, bio, running_level, profile_picture_url, criado_em FROM usuarios WHERE id = ? LIMIT 1',
       [id]
     );
     if (!rows || rows.length === 0) return null;
@@ -47,10 +52,11 @@ const UsuarioModel = {
   },
 
   /**
-   * Atualiza biografia e/ou nível de corrida do usuário.
+   * Atualiza biografia, nível de corrida e/ou foto de perfil do usuário.
    * Aceita atualização parcial: apenas os campos enviados são alterados.
+   * Para remover a foto de perfil, passe profilePictureUrl: null explicitamente.
    */
-  async atualizarPerfil(id, { bio, runningLevel }) {
+  async atualizarPerfil(id, { bio, runningLevel, profilePictureUrl }) {
     const campos = [];
     const valores = [];
 
@@ -61,6 +67,10 @@ const UsuarioModel = {
     if (runningLevel !== undefined) {
       campos.push('running_level = ?');
       valores.push(runningLevel);
+    }
+    if (profilePictureUrl !== undefined) {
+      campos.push('profile_picture_url = ?');
+      valores.push(profilePictureUrl);
     }
 
     if (campos.length === 0) {
@@ -91,6 +101,7 @@ function _mapearLinha(r) {
     senhaHash: r.senha_hash,
     bio: r.bio,
     runningLevel: r.running_level,
+    profilePictureUrl: r.profile_picture_url,
     criadoEm: r.criado_em,
   };
 }
