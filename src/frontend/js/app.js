@@ -34,6 +34,15 @@ async function apiFetch(path, opts = {}) {
   return { ok: res.ok, status: res.status, data };
 }
 
+// Upload de arquivos usa FormData; o navegador define o Content-Type (multipart) automaticamente.
+async function apiUpload(path, formData) {
+  const headers = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  const res = await fetch(API + path, { method: 'POST', headers, body: formData });
+  const data = await res.json();
+  return { ok: res.ok, status: res.status, data };
+}
+
 function tipoLabel(tipo) {
   const labels = { corrida_leve: 'Corrida leve', intervalado: 'Intervalado', longao: 'Longão' };
   return labels[tipo] || tipo;
@@ -300,6 +309,24 @@ async function sairTreino(id) {
 // ── PERFIL ───────────────────────────────────────────────────────────────────
 
 let perfilVisualizadoId = null;
+let arquivoFotoSelecionado = null;
+
+const TIPOS_FOTO_ACEITOS = ['image/jpeg', 'image/jpg', 'image/png'];
+const FOTO_MAX_BYTES = 5 * 1024 * 1024; // 5MB
+
+function exibirAvatar(imgId, placeholderId, url) {
+  const img = $(imgId);
+  const placeholder = $(placeholderId);
+  if (url) {
+    img.src = url;
+    img.classList.remove('hidden');
+    placeholder.classList.add('hidden');
+  } else {
+    img.removeAttribute('src');
+    img.classList.add('hidden');
+    placeholder.classList.remove('hidden');
+  }
+}
 
 async function mostrarPerfil(usuarioId) {
   perfilVisualizadoId = usuarioId || usuarioAtual?.id;
@@ -315,6 +342,7 @@ async function mostrarPerfil(usuarioId) {
   $('perfil-nome').textContent = 'Carregando...';
   $('perfil-nivel').textContent = '';
   $('perfil-bio').textContent = '';
+  exibirAvatar('perfil-foto', 'perfil-foto-placeholder', null);
 
   const { ok, data } = await apiFetch(`/usuarios/${perfilVisualizadoId}`);
   if (!ok) {
@@ -326,6 +354,7 @@ async function mostrarPerfil(usuarioId) {
   $('perfil-nome').textContent = u.nome;
   $('perfil-nivel').textContent = nivelLabel(u.runningLevel);
   $('perfil-bio').textContent = u.bio || 'Nenhuma biografia cadastrada ainda.';
+  exibirAvatar('perfil-foto', 'perfil-foto-placeholder', u.profilePictureUrl);
 }
 
 $('btn-perfil').addEventListener('click', () => mostrarPerfil(usuarioAtual?.id));
@@ -340,6 +369,12 @@ $('btn-editar-perfil').addEventListener('click', async () => {
   $('perfil-edit-bio').value = u.bio || '';
   $('perfil-contador').textContent = `${(u.bio || '').length}/500`;
 
+  arquivoFotoSelecionado = null;
+  $('perfil-edit-foto-input').value = '';
+  $('perfil-foto-erro').classList.add('hidden');
+  exibirAvatar('perfil-edit-preview', 'perfil-edit-preview-placeholder', u.profilePictureUrl);
+  $('btn-remover-foto').classList.toggle('hidden', !u.profilePictureUrl);
+
   $('perfil-leitura').classList.add('hidden');
   $('form-perfil').classList.remove('hidden');
 });
@@ -349,13 +384,78 @@ $('perfil-edit-bio').addEventListener('input', () => {
 });
 
 $('btn-cancelar-edicao').addEventListener('click', () => {
+  arquivoFotoSelecionado = null;
+  $('perfil-edit-foto-input').value = '';
   $('form-perfil').classList.add('hidden');
   $('perfil-leitura').classList.remove('hidden');
+});
+
+// ── FOTO DE PERFIL: seleção, preview e remoção ──
+
+$('btn-escolher-foto').addEventListener('click', () => $('perfil-edit-foto-input').click());
+
+$('perfil-edit-foto-input').addEventListener('change', () => {
+  const arquivo = $('perfil-edit-foto-input').files[0];
+  $('perfil-foto-erro').classList.add('hidden');
+  if (!arquivo) return;
+
+  if (!TIPOS_FOTO_ACEITOS.includes(arquivo.type)) {
+    mostrarMsg('perfil-foto-erro', 'Apenas arquivos JPG ou PNG são aceitos.');
+    $('perfil-foto-erro').classList.remove('hidden');
+    $('perfil-edit-foto-input').value = '';
+    return;
+  }
+  if (arquivo.size > FOTO_MAX_BYTES) {
+    mostrarMsg('perfil-foto-erro', 'A foto deve ter no máximo 5MB.');
+    $('perfil-foto-erro').classList.remove('hidden');
+    $('perfil-edit-foto-input').value = '';
+    return;
+  }
+
+  arquivoFotoSelecionado = arquivo;
+  const leitor = new FileReader();
+  leitor.onload = () => exibirAvatar('perfil-edit-preview', 'perfil-edit-preview-placeholder', leitor.result);
+  leitor.readAsDataURL(arquivo);
+  $('btn-remover-foto').classList.remove('hidden');
+});
+
+$('btn-remover-foto').addEventListener('click', async () => {
+  if (arquivoFotoSelecionado) {
+    arquivoFotoSelecionado = null;
+    $('perfil-edit-foto-input').value = '';
+    const { data } = await apiFetch(`/usuarios/${perfilVisualizadoId}`);
+    const urlAtual = data?.usuario?.profilePictureUrl || null;
+    exibirAvatar('perfil-edit-preview', 'perfil-edit-preview-placeholder', urlAtual);
+    $('btn-remover-foto').classList.toggle('hidden', !urlAtual);
+    return;
+  }
+
+  if (!confirm('Remover sua foto de perfil?')) return;
+
+  const { ok, data } = await apiFetch(`/usuarios/${perfilVisualizadoId}/profile-picture`, { method: 'DELETE' });
+  if (!ok) return mostrarMsg('msg-perfil', data.erro || 'Erro ao remover a foto de perfil.');
+
+  exibirAvatar('perfil-edit-preview', 'perfil-edit-preview-placeholder', null);
+  $('btn-remover-foto').classList.add('hidden');
+
+  if (perfilVisualizadoId === usuarioAtual?.id) {
+    usuarioAtual = { ...usuarioAtual, ...data.usuario };
+    localStorage.setItem('cj_usuario', JSON.stringify(usuarioAtual));
+  }
 });
 
 $('form-perfil').addEventListener('submit', async e => {
   e.preventDefault();
   limparMsg('msg-perfil');
+
+  if (arquivoFotoSelecionado) {
+    const formData = new FormData();
+    formData.append('foto', arquivoFotoSelecionado);
+    const { ok, data } = await apiUpload(`/usuarios/${perfilVisualizadoId}/profile-picture`, formData);
+    if (!ok) return mostrarMsg('msg-perfil', data.erro || 'Erro ao enviar a foto de perfil.');
+    arquivoFotoSelecionado = null;
+    $('perfil-edit-foto-input').value = '';
+  }
 
   const body = {
     bio: $('perfil-edit-bio').value,
@@ -369,7 +469,6 @@ $('form-perfil').addEventListener('submit', async e => {
 
   if (!ok) return mostrarMsg('msg-perfil', data.erro);
 
-  // Atualiza o usuário local se for o próprio perfil
   if (perfilVisualizadoId === usuarioAtual?.id) {
     usuarioAtual = { ...usuarioAtual, ...data.usuario };
     localStorage.setItem('cj_usuario', JSON.stringify(usuarioAtual));
