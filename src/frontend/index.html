@@ -10,7 +10,10 @@
 
 <header>
   <h1>🏃 CorreJunto</h1>
-  <button id="btn-logout" class="hidden">Sair</button>
+  <div class="header-acoes hidden" id="header-acoes">
+    <button id="btn-perfil" class="btn-secondary">Meu perfil</button>
+    <button id="btn-logout">Sair</button>
+  </div>
 </header>
 
 <main>
@@ -150,6 +153,51 @@
           <textarea id="editar-descricao" placeholder="Detalhes do treino..."></textarea>
         </div>
         <button type="submit" class="btn btn-primary">Salvar alterações</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ── VIEW: PERFIL ── -->
+  <div id="view-perfil" class="hidden">
+    <button class="btn-voltar" onclick="mostrarTreinos()">← Voltar</button>
+    <div class="card">
+      <h2 id="perfil-titulo">Meu perfil</h2>
+      <div id="msg-perfil"></div>
+
+      <!-- Modo leitura -->
+      <div id="perfil-leitura">
+        <div class="detalhe-label">Nome</div>
+        <div class="detalhe-valor" id="perfil-nome"></div>
+
+        <div class="detalhe-label">Nível de corrida</div>
+        <div class="detalhe-valor" id="perfil-nivel"></div>
+
+        <div class="detalhe-label">Biografia</div>
+        <div class="detalhe-valor" id="perfil-bio"></div>
+
+        <button class="btn btn-primary" id="btn-editar-perfil" style="margin-top:1.2rem;">Editar perfil</button>
+      </div>
+
+      <!-- Modo edição -->
+      <form id="form-perfil" class="hidden">
+        <div class="field">
+          <label>Nível de corrida</label>
+          <select id="perfil-edit-nivel">
+            <option value="">Não informado</option>
+            <option value="iniciante">Iniciante</option>
+            <option value="intermediario">Intermediário</option>
+            <option value="avancado">Avançado</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Biografia <span style="font-weight:400;color:#aaa;">(máx. 500 caracteres)</span></label>
+          <textarea id="perfil-edit-bio" maxlength="500" placeholder="Conte um pouco sobre você como corredor..."></textarea>
+          <span id="perfil-contador" style="font-size:.78rem;color:#999;align-self:flex-end;margin-top:.2rem;">0/500</span>
+        </div>
+        <div class="row">
+          <button type="submit" class="btn btn-primary">Salvar</button>
+          <button type="button" class="btn btn-secondary" id="btn-cancelar-edicao">Cancelar</button>
+        </div>
       </form>
     </div>
   </div>
