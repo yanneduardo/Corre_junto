@@ -7,6 +7,8 @@ CREATE TABLE IF NOT EXISTS usuarios (
   nome VARCHAR(120) NOT NULL,
   email VARCHAR(180) NOT NULL UNIQUE,
   senha_hash VARCHAR(255) NOT NULL,
+  bio VARCHAR(500) NULL,
+  running_level ENUM('iniciante','intermediario','avancado') NULL,
   criado_em DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
