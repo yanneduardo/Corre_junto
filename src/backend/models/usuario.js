@@ -4,7 +4,13 @@ const pool = require('../config/database');
 
 const SALT_ROUNDS = 10;
 
+const NIVEIS_VALIDOS = ['iniciante', 'intermediario', 'avancado'];
+const BIO_MAX_LENGTH = 500;
+
 const UsuarioModel = {
+  NIVEIS_VALIDOS,
+  BIO_MAX_LENGTH,
+
   async criar({ nome, email, senha }) {
     const senhaHash = await bcrypt.hash(senha, SALT_ROUNDS);
     const id = uuidv4();
@@ -12,27 +18,58 @@ const UsuarioModel = {
       'INSERT INTO usuarios (id, nome, email, senha_hash) VALUES (?, ?, ?, ?)',
       [id, nome, email.toLowerCase().trim(), senhaHash]
     );
-    return { id, nome, email: email.toLowerCase().trim(), criadoEm: new Date().toISOString() };
+    return {
+      id,
+      nome,
+      email: email.toLowerCase().trim(),
+      bio: null,
+      runningLevel: null,
+      criadoEm: new Date().toISOString(),
+    };
   },
 
   async buscarPorEmail(email) {
     const [rows] = await pool.execute(
-      'SELECT id, nome, email, senha_hash, criado_em FROM usuarios WHERE email = ? LIMIT 1',
+      'SELECT id, nome, email, senha_hash, bio, running_level, criado_em FROM usuarios WHERE email = ? LIMIT 1',
       [email.toLowerCase().trim()]
     );
     if (!rows || rows.length === 0) return null;
-    const r = rows[0];
-    return { id: r.id, nome: r.nome, email: r.email, senhaHash: r.senha_hash, criadoEm: r.criado_em };
+    return _mapearLinha(rows[0]);
   },
 
   async buscarPorId(id) {
     const [rows] = await pool.execute(
-      'SELECT id, nome, email, senha_hash, criado_em FROM usuarios WHERE id = ? LIMIT 1',
+      'SELECT id, nome, email, senha_hash, bio, running_level, criado_em FROM usuarios WHERE id = ? LIMIT 1',
       [id]
     );
     if (!rows || rows.length === 0) return null;
-    const r = rows[0];
-    return { id: r.id, nome: r.nome, email: r.email, senhaHash: r.senha_hash, criadoEm: r.criado_em };
+    return _mapearLinha(rows[0]);
+  },
+
+  /**
+   * Atualiza biografia e/ou nível de corrida do usuário.
+   * Aceita atualização parcial: apenas os campos enviados são alterados.
+   */
+  async atualizarPerfil(id, { bio, runningLevel }) {
+    const campos = [];
+    const valores = [];
+
+    if (bio !== undefined) {
+      campos.push('bio = ?');
+      valores.push(bio);
+    }
+    if (runningLevel !== undefined) {
+      campos.push('running_level = ?');
+      valores.push(runningLevel);
+    }
+
+    if (campos.length === 0) {
+      return this.buscarPorId(id);
+    }
+
+    valores.push(id);
+    await pool.execute(`UPDATE usuarios SET ${campos.join(', ')} WHERE id = ?`, valores);
+    return this.buscarPorId(id);
   },
 
   async verificarSenha(senhaPlana, senhaHash) {
@@ -45,5 +82,17 @@ const UsuarioModel = {
     return publico;
   },
 };
+
+function _mapearLinha(r) {
+  return {
+    id: r.id,
+    nome: r.nome,
+    email: r.email,
+    senhaHash: r.senha_hash,
+    bio: r.bio,
+    runningLevel: r.running_level,
+    criadoEm: r.criado_em,
+  };
+}
 
 module.exports = UsuarioModel;
