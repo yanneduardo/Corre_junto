@@ -202,3 +202,28 @@ main { max-width: 640px; margin: 2rem auto; padding: 0 1rem; }
 #perfil-contador { font-size: .78rem; color: #999; }
 #form-perfil .row .btn { width: auto; }
 #perfil-bio { white-space: pre-wrap; }
+
+/* ── FOTO DE PERFIL ── */
+.avatar-wrap {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+.avatar-img,
+.avatar-placeholder {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  border: 2px solid var(--borda);
+}
+.avatar-img {
+  object-fit: cover;
+}
+.avatar-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.6rem;
+  background: var(--cinza);
+  color: #aaa;
+}
