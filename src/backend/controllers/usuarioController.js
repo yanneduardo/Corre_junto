@@ -1,18 +1,19 @@
 const pool = require('../config/database');
+const fs = require('fs');
+const path = require('path');
 const UsuarioModel = require('../models/usuario');
+const { PASTA_UPLOADS } = require('../middlewares/upload');
 
 // Obter estatísticas de treinos do usuário
 exports.obterEstatisticasTreinos = async (req, res) => {
   try {
     const usuarioId = req.params.id;
 
-    // Contar treinos CRIADOS
     const [treinosCriados] = await pool.execute(
       'SELECT COUNT(*) as total FROM treinos WHERE criador_id = ?',
       [usuarioId]
     );
 
-    // Contar treinos que PARTICIPA
     const [treinosParticipa] = await pool.execute(
       'SELECT COUNT(*) as total FROM treino_participantes WHERE usuario_id = ?',
       [usuarioId]
@@ -72,6 +73,91 @@ exports.atualizarBio = async (req, res) => {
     res.status(500).json({ erro: 'Erro ao atualizar perfil.' });
   }
 };
+
+/**
+ * POST /usuarios/:id/profile-picture
+ * Faz upload de uma nova foto de perfil para o usuário autenticado.
+ * Apenas o próprio usuário pode alterar sua foto.
+ * Se já existir uma foto anterior, ela é substituída (o arquivo antigo é removido).
+ */
+exports.uploadFotoPerfil = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (req.usuario.id !== id) {
+      if (req.file) _removerArquivoFisico(req.file.path);
+      return res.status(403).json({ erro: 'Você só pode editar o seu próprio perfil.' });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({ erro: 'Nenhum arquivo de imagem foi enviado.' });
+    }
+
+    const usuarioAtual = await UsuarioModel.buscarPorId(id);
+    if (!usuarioAtual) {
+      _removerArquivoFisico(req.file.path);
+      return res.status(404).json({ erro: 'Usuário não encontrado.' });
+    }
+
+    const novaUrl = `/uploads/profile-pictures/${req.file.filename}`;
+    const usuarioAtualizado = await UsuarioModel.atualizarPerfil(id, { profilePictureUrl: novaUrl });
+
+    if (usuarioAtual.profilePictureUrl) {
+      _removerArquivoFisico(path.join(PASTA_UPLOADS, path.basename(usuarioAtual.profilePictureUrl)));
+    }
+
+    return res.json({
+      mensagem: 'Foto de perfil atualizada com sucesso.',
+      usuario: UsuarioModel._semSenha(usuarioAtualizado),
+    });
+  } catch (erro) {
+    if (req.file) _removerArquivoFisico(req.file.path);
+    console.error('Erro ao fazer upload da foto de perfil:', erro);
+    res.status(500).json({ erro: 'Erro ao fazer upload da foto de perfil.' });
+  }
+};
+
+/**
+ * DELETE /usuarios/:id/profile-picture
+ * Remove a foto de perfil do usuário autenticado.
+ */
+exports.removerFotoPerfil = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (req.usuario.id !== id) {
+      return res.status(403).json({ erro: 'Você só pode editar o seu próprio perfil.' });
+    }
+
+    const usuarioAtual = await UsuarioModel.buscarPorId(id);
+    if (!usuarioAtual) {
+      return res.status(404).json({ erro: 'Usuário não encontrado.' });
+    }
+
+    if (!usuarioAtual.profilePictureUrl) {
+      return res.status(400).json({ erro: 'Usuário não possui foto de perfil para remover.' });
+    }
+
+    const usuarioAtualizado = await UsuarioModel.atualizarPerfil(id, { profilePictureUrl: null });
+    _removerArquivoFisico(path.join(PASTA_UPLOADS, path.basename(usuarioAtual.profilePictureUrl)));
+
+    return res.json({
+      mensagem: 'Foto de perfil removida com sucesso.',
+      usuario: UsuarioModel._semSenha(usuarioAtualizado),
+    });
+  } catch (erro) {
+    console.error('Erro ao remover foto de perfil:', erro);
+    res.status(500).json({ erro: 'Erro ao remover foto de perfil.' });
+  }
+};
+
+function _removerArquivoFisico(caminho) {
+  fs.unlink(caminho, (erro) => {
+    if (erro && erro.code !== 'ENOENT') {
+      console.error('Erro ao remover arquivo de foto de perfil:', erro);
+    }
+  });
+}
 
 /**
  * GET /usuarios/:id
