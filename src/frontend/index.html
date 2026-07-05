@@ -180,6 +180,12 @@
         <div class="detalhe-label">Biografia</div>
         <div class="detalhe-valor" id="perfil-bio"></div>
 
+        <div id="perfil-whatsapp-wrap" class="detalhe-valor hidden" style="margin-top:.6rem;">
+          <a id="perfil-whatsapp-link" href="#" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">
+            🟢 Chamar no WhatsApp
+          </a>
+        </div>
+
         <button class="btn btn-primary" id="btn-editar-perfil" style="margin-top:1.2rem;">Editar perfil</button>
       </div>
 
@@ -211,6 +217,15 @@
           <label>Biografia <span style="font-weight:400;color:#aaa;">(máx. 500 caracteres)</span></label>
           <textarea id="perfil-edit-bio" maxlength="500" placeholder="Conte um pouco sobre você como corredor..."></textarea>
           <span id="perfil-contador" style="font-size:.78rem;color:#999;align-self:flex-end;margin-top:.2rem;">0/500</span>
+        </div>
+        <div class="field">
+          <label>WhatsApp <span style="font-weight:400;color:#aaa;">(com código do país, ex: 55 para Brasil)</span></label>
+          <input type="text" id="perfil-edit-whatsapp" placeholder="Ex: 5511999998888" inputmode="numeric" />
+          <span id="perfil-whatsapp-erro" class="msg msg-erro hidden" style="margin-top:.5rem;"></span>
+          <label style="display:flex;align-items:center;gap:.4rem;font-weight:400;margin-top:.5rem;">
+            <input type="checkbox" id="perfil-edit-whatsapp-publico" style="width:auto;" />
+            Tornar meu WhatsApp visível no meu perfil público
+          </label>
         </div>
         <div class="row">
           <button type="submit" class="btn btn-primary">Salvar</button>

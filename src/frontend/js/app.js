@@ -355,6 +355,13 @@ async function mostrarPerfil(usuarioId) {
   $('perfil-nivel').textContent = nivelLabel(u.runningLevel);
   $('perfil-bio').textContent = u.bio || 'Nenhuma biografia cadastrada ainda.';
   exibirAvatar('perfil-foto', 'perfil-foto-placeholder', u.profilePictureUrl);
+
+  if (u.whatsappLink) {
+    $('perfil-whatsapp-link').href = u.whatsappLink;
+    $('perfil-whatsapp-wrap').classList.remove('hidden');
+  } else {
+    $('perfil-whatsapp-wrap').classList.add('hidden');
+  }
 }
 
 $('btn-perfil').addEventListener('click', () => mostrarPerfil(usuarioAtual?.id));
@@ -368,6 +375,9 @@ $('btn-editar-perfil').addEventListener('click', async () => {
   $('perfil-edit-nivel').value = u.runningLevel || '';
   $('perfil-edit-bio').value = u.bio || '';
   $('perfil-contador').textContent = `${(u.bio || '').length}/500`;
+  $('perfil-edit-whatsapp').value = u.whatsapp || '';
+  $('perfil-edit-whatsapp-publico').checked = !!u.whatsappPublico;
+  $('perfil-whatsapp-erro').classList.add('hidden');
 
   arquivoFotoSelecionado = null;
   $('perfil-edit-foto-input').value = '';
@@ -444,9 +454,19 @@ $('btn-remover-foto').addEventListener('click', async () => {
   }
 });
 
+const WHATSAPP_REGEX = /^[1-9]\d{9,14}$/;
+
 $('form-perfil').addEventListener('submit', async e => {
   e.preventDefault();
   limparMsg('msg-perfil');
+  $('perfil-whatsapp-erro').classList.add('hidden');
+
+  const whatsappDigitado = $('perfil-edit-whatsapp').value.replace(/\D/g, '');
+  if (whatsappDigitado && !WHATSAPP_REGEX.test(whatsappDigitado)) {
+    mostrarMsg('perfil-whatsapp-erro', 'Número de WhatsApp inválido. Use o código do país + DDD + número, ex: 5511999998888.');
+    $('perfil-whatsapp-erro').classList.remove('hidden');
+    return;
+  }
 
   if (arquivoFotoSelecionado) {
     const formData = new FormData();
@@ -469,8 +489,24 @@ $('form-perfil').addEventListener('submit', async e => {
 
   if (!ok) return mostrarMsg('msg-perfil', data.erro);
 
+  const whatsappBody = {
+    whatsapp: whatsappDigitado || null,
+    whatsappPublico: $('perfil-edit-whatsapp-publico').checked,
+  };
+
+  const respWhatsapp = await apiFetch(`/usuarios/${perfilVisualizadoId}/whatsapp`, {
+    method: 'PUT',
+    body: JSON.stringify(whatsappBody),
+  });
+
+  if (!respWhatsapp.ok) {
+    mostrarMsg('perfil-whatsapp-erro', respWhatsapp.data.erro || 'Erro ao salvar o WhatsApp.');
+    $('perfil-whatsapp-erro').classList.remove('hidden');
+    return;
+  }
+
   if (perfilVisualizadoId === usuarioAtual?.id) {
-    usuarioAtual = { ...usuarioAtual, ...data.usuario };
+    usuarioAtual = { ...usuarioAtual, ...data.usuario, ...respWhatsapp.data.usuario };
     localStorage.setItem('cj_usuario', JSON.stringify(usuarioAtual));
   }
 
