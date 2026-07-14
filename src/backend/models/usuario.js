@@ -9,11 +9,33 @@ const BIO_MAX_LENGTH = 500;
 const TIPOS_FOTO_VALIDOS = ['image/jpeg', 'image/jpg', 'image/png'];
 const FOTO_MAX_BYTES = 5 * 1024 * 1024; // 5MB
 
+// Apenas dígitos, com código do país incluído (ex: 55 para Brasil).
+// Entre 10 e 15 dígitos (padrão E.164, sem o "+"), não pode começar com 0.
+const WHATSAPP_REGEX = /^[1-9]\d{9,14}$/;
+
 const UsuarioModel = {
   NIVEIS_VALIDOS,
   BIO_MAX_LENGTH,
   TIPOS_FOTO_VALIDOS,
   FOTO_MAX_BYTES,
+  WHATSAPP_REGEX,
+
+  /**
+   * Remove qualquer caractere que não seja dígito (espaços, +, (), -, etc).
+   */
+  limparWhatsapp(valor) {
+    if (typeof valor !== 'string') return valor;
+    return valor.replace(/\D/g, '');
+  },
+
+  /**
+   * Gera o link direto do WhatsApp a partir do número (já limpo, com código do país).
+   * Retorna null se não houver número.
+   */
+  gerarLinkWhatsapp(whatsapp) {
+    if (!whatsapp) return null;
+    return `https://wa.me/${whatsapp}`;
+  },
 
   async criar({ nome, email, senha }) {
     const senhaHash = await bcrypt.hash(senha, SALT_ROUNDS);
@@ -29,13 +51,15 @@ const UsuarioModel = {
       bio: null,
       runningLevel: null,
       profilePictureUrl: null,
+      whatsapp: null,
+      whatsappPublico: false,
       criadoEm: new Date().toISOString(),
     };
   },
 
   async buscarPorEmail(email) {
     const [rows] = await pool.execute(
-      'SELECT id, nome, email, senha_hash, bio, running_level, profile_picture_url, criado_em FROM usuarios WHERE email = ? LIMIT 1',
+      'SELECT id, nome, email, senha_hash, bio, running_level, profile_picture_url, whatsapp, whatsapp_publico, criado_em FROM usuarios WHERE email = ? LIMIT 1',
       [email.toLowerCase().trim()]
     );
     if (!rows || rows.length === 0) return null;
@@ -44,7 +68,7 @@ const UsuarioModel = {
 
   async buscarPorId(id) {
     const [rows] = await pool.execute(
-      'SELECT id, nome, email, senha_hash, bio, running_level, profile_picture_url, criado_em FROM usuarios WHERE id = ? LIMIT 1',
+      'SELECT id, nome, email, senha_hash, bio, running_level, profile_picture_url, whatsapp, whatsapp_publico, criado_em FROM usuarios WHERE id = ? LIMIT 1',
       [id]
     );
     if (!rows || rows.length === 0) return null;
@@ -56,7 +80,7 @@ const UsuarioModel = {
    * Aceita atualização parcial: apenas os campos enviados são alterados.
    * Para remover a foto de perfil, passe profilePictureUrl: null explicitamente.
    */
-  async atualizarPerfil(id, { bio, runningLevel, profilePictureUrl }) {
+  async atualizarPerfil(id, { bio, runningLevel, profilePictureUrl, whatsapp, whatsappPublico }) {
     const campos = [];
     const valores = [];
 
@@ -71,6 +95,14 @@ const UsuarioModel = {
     if (profilePictureUrl !== undefined) {
       campos.push('profile_picture_url = ?');
       valores.push(profilePictureUrl);
+    }
+    if (whatsapp !== undefined) {
+      campos.push('whatsapp = ?');
+      valores.push(whatsapp);
+    }
+    if (whatsappPublico !== undefined) {
+      campos.push('whatsapp_publico = ?');
+      valores.push(whatsappPublico ? 1 : 0);
     }
 
     if (campos.length === 0) {
@@ -102,6 +134,8 @@ function _mapearLinha(r) {
     bio: r.bio,
     runningLevel: r.running_level,
     profilePictureUrl: r.profile_picture_url,
+    whatsapp: r.whatsapp,
+    whatsappPublico: !!r.whatsapp_publico,
     criadoEm: r.criado_em,
   };
 }

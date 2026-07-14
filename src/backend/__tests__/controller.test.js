@@ -6,9 +6,12 @@ jest.mock('../config/database');
 jest.mock('../models/usuario', () => ({
   NIVEIS_VALIDOS: ['iniciante', 'intermediario', 'avancado'],
   BIO_MAX_LENGTH: 500,
+  WHATSAPP_REGEX: /^[1-9]\d{9,14}$/,
   buscarPorId: jest.fn(),
   atualizarPerfil: jest.fn(),
   _semSenha: jest.fn(),
+  limparWhatsapp: jest.fn(v => (typeof v === 'string' ? v.replace(/\D/g, '') : v)),
+  gerarLinkWhatsapp: jest.fn(w => (w ? `https://wa.me/${w}` : null)),
 }));
 
 describe('UsuarioController - Endpoints', () => {
@@ -48,7 +51,9 @@ describe('UsuarioController - Endpoints', () => {
 
       await usuarioController.buscarPerfil(req, res);
 
-      expect(res.json).toHaveBeenCalledWith({ usuario });
+      expect(res.json).toHaveBeenCalledWith({
+        usuario: { ...usuario, whatsapp: null, whatsappLink: null },
+      });
     });
 
     it('deve retornar 404 se usuário não existe', async () => {
